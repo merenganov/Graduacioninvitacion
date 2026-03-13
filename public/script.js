@@ -160,7 +160,7 @@ if (rsvpForm) {
     };
 
     // Enviar los datos al servidor usando Fetch API
-    fetch("http://localhost:3000/submit", {
+    fetch("/submit", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
