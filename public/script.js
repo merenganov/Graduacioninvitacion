@@ -11,9 +11,16 @@ const misaModal = document.getElementById("misaModal");
 const openMassModal = document.getElementById("openMassModal");
 const closeMisaModal = document.getElementById("closeMisaModal");
 
+const rsvpForm = document.getElementById("rsvpForm");
+const statusBox = document.getElementById("status");
+const submitButton = document.querySelector("#rsvpForm button[type='submit']");
+
 const deadline = new Date("2026-11-30T23:59:59").getTime();
 const now = new Date().getTime();
-const submitButton = document.querySelector("#rsvpForm button[type='submit']");
+
+/* =========================
+   CIERRE DE REGISTRO
+========================= */
 
 if (now > deadline) {
   if (submitButton) {
@@ -24,40 +31,57 @@ if (now > deadline) {
   }
 
   if (statusBox) {
-    statusBox.textContent = "La fecha límite para responder fue el lunes 30 de noviembre de 2026.";
+    statusBox.textContent =
+      "La fecha límite para responder fue el lunes 30 de noviembre de 2026.";
   }
 }
 
-// Abrir el modal de la fiesta
-openPartyModal.onclick = function() {
-  partyModal.style.display = "block";
+/* =========================
+   MODALES
+========================= */
+
+// Abrir modal fiesta
+if (openPartyModal && partyModal) {
+  openPartyModal.onclick = function () {
+    partyModal.style.display = "block";
+  };
 }
 
-// Cerrar el modal de la fiesta
-closePartyModal.onclick = function() {
-  partyModal.style.display = "none";
+// Cerrar modal fiesta
+if (closePartyModal && partyModal) {
+  closePartyModal.onclick = function () {
+    partyModal.style.display = "none";
+  };
 }
 
-// Cerrar el modal si se hace clic fuera de él
-window.onclick = function(event) {
-  if (event.target === partyModal) {
+// Abrir modal misa
+if (openMassModal && misaModal) {
+  openMassModal.onclick = function () {
+    misaModal.style.display = "block";
+  };
+}
+
+// Cerrar modal misa
+if (closeMisaModal && misaModal) {
+  closeMisaModal.onclick = function () {
+    misaModal.style.display = "none";
+  };
+}
+
+// Cerrar modales al hacer clic fuera
+window.onclick = function (event) {
+  if (partyModal && event.target === partyModal) {
     partyModal.style.display = "none";
   }
-}
 
-// Openmenu misa
-openMassModal.onclick = function(){
-  misaModal.style.display = "block";
-}
-closeMisaModal.onclick = function(){
-  misaModal.style.display = "none";
-}
-
-window.onclick = function(event){
-  if (event.target === misaModal){
-    misaModal.style.display = "none"
+  if (misaModal && event.target === misaModal) {
+    misaModal.style.display = "none";
   }
-}
+};
+
+/* =========================
+   SLIDER
+========================= */
 
 let currentSlide = 0;
 
@@ -71,6 +95,7 @@ function showSlide(index) {
   });
 
   currentSlide = index;
+
   window.scrollTo({
     top: 0,
     behavior: "smooth"
@@ -126,7 +151,9 @@ function updateCountdown() {
   }
 
   const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const hours = Math.floor(
+    (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+  );
   const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
   const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
@@ -143,45 +170,52 @@ setInterval(updateCountdown, 1000);
    FORMULARIO
 ========================= */
 
-const rsvpForm = document.getElementById("rsvpForm");
-const statusBox = document.getElementById("status");
-
 if (rsvpForm) {
-  rsvpForm.addEventListener("submit", (e) => {
+  rsvpForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    if (statusBox) {
+      statusBox.textContent = "Enviando confirmación...";
+    }
+
     const data = {
-      name: document.getElementById("name").value,
-      phone: document.getElementById("phone").value,
+      name: document.getElementById("name").value.trim(),
+      phone: document.getElementById("phone").value.trim(),
       guestType: document.getElementById("guestType").value,
       attendance: document.getElementById("attendance").value,
       guests: document.getElementById("guests").value || "0",
-      message: document.getElementById("message").value
+      message: document.getElementById("message").value.trim()
     };
 
-    // Enviar los datos al servidor usando Fetch API
-    fetch("/submit", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(data) // Convertir los datos en formato JSON
-    })
-      .then((response) => response.text()) // Leer la respuesta del servidor
-      .then((data) => {
-        console.log("Respuesta del servidor:", data);
-
-        if (statusBox) {
-          statusBox.textContent = "Tu confirmación fue registrada correctamente.";
-        }
-
-        rsvpForm.reset(); // Limpiar el formulario
-      })
-      .catch((error) => {
-        console.error("Error al enviar la confirmación:", error);
-        if (statusBox) {
-          statusBox.textContent = "Hubo un error al registrar tu confirmación. Intenta nuevamente.";
-        }
+    try {
+      const response = await fetch("/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
       });
+
+      const result = await response.text();
+
+      if (!response.ok) {
+        throw new Error(result || "Error desconocido del servidor.");
+      }
+
+      console.log("Respuesta del servidor:", result);
+
+      if (statusBox) {
+        statusBox.textContent = "Tu confirmación fue registrada correctamente.";
+      }
+
+      rsvpForm.reset();
+    } catch (error) {
+      console.error("Error al enviar la confirmación:", error);
+
+      if (statusBox) {
+        statusBox.textContent =
+          "Hubo un error al registrar tu confirmación: " + error.message;
+      }
+    }
   });
 }
