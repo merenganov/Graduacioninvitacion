@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invitación de Graduación</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <main class="container">
+    <section class="slider">
+
+      <!-- VISTA PRINCIPAL -->
+      <section class="slide active" id="slide-1">
+        <div class="card hero">
+
+          <p class="label">Ceremonia de graduación</p>
+
+          <div class="cap">
+            <span>🎓</span>
+          </div>
+
+          <h1 class="title">Graduation</h1>
+          <p class="year">2026</p>
+
+          <p class="subtitle">
+            Te invitamos a celebrar uno de los momentos más importantes de mi vida.
+            Acompáñame en esta ceremonia especial.
+          </p>
+
+          <div class="hero-grid">
+            <div class="hero-box">
+              <h3>Fecha</h3>
+              <p>18 de diciembre de 2026</p>
+            </div>
+
+            <div class="hero-box">
+              <h3>Hora</h3>
+              <p>9:00 p. m.</p>
+            </div>
+
+            <div class="hero-box">
+              <h3>Lugar</h3>
+              <p>Salón de locomotoras ubicado por 3 centurias - Aguascalientes</p>
+            </div>
+          </div>
+
+          <div class="countdown">
+            <h2>Cuenta regresiva</h2>
+
+            <div class="count-grid">
+              <div class="count-box">
+                <h3>Días</h3>
+                <p id="days">0</p>
+              </div>
+
+              <div class="count-box">
+                <h3>Horas</h3>
+                <p id="hours">0</p>
+              </div>
+
+              <div class="count-box">
+                <h3>Minutos</h3>
+                <p id="minutes">0</p>
+              </div>
+
+              <div class="count-box">
+                <h3>Segundos</h3>
+                <p id="seconds">0</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="button" id="nextBtn">Siguiente</button>
+          </div>
+
+          <div class="nav-dots">
+            <button type="button" class="dot active" data-go="0" aria-label="Ir a página 1"></button>
+            <button type="button" class="dot" data-go="1" aria-label="Ir a página 2"></button>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- VISTA SECUNDARIA -->
+      <section class="slide" id="slide-2">
+        <div class="card content-section">
+
+          <h2 class="section-title">Sobre el evento</h2>
+
+          <p class="section-text">
+            Hola, soy <strong>Oswaldo</strong>, estudiante de
+            <strong>Ingeniería en Sistemas Computacionales</strong>. Me dará mucho gusto contar con tu presencia
+            en este día tan importante.
+          </p>
+
+          <div class="info-grid">
+
+            <div class="details-column">
+              <div class="info-box">
+                <h3>Detalles de la graduación</h3>
+
+                <ul class="list">
+                  <li><strong>Graduado:</strong> Oswaldo De La Cruz Garcia</li>
+                  <li><strong>Carrera:</strong> Ingeniería en Sistemas Computacionales</li>
+                  <li><strong>Institución:</strong> Universidad Autónoma de Aguascalientes</li>
+                  <li><strong>Fecha:</strong> 18 de diciembre de 2026</li>
+                  <li><strong>Hora:</strong> 9:00 p. m.</li>
+                  <li><strong>Ubicación:</strong> Salón de locomotoras ubicado por 3 centuras - Aguascalientes</li>
+                </ul>
+              </div>
+              <br>
+              <!-- Botón para abrir la ventana emergente -->
+              <button class="btn-modal" id="openPartyModal">Pica aquí para más información sobre la celebración</button>
+              <br>
+              <br>
+
+               <!-- Ventana emergente (modal) -->
+               <div class="modal" id="partyModal">
+               <div class="modal-content">
+              <span class="close" id="closePartyModal">&times;</span>
+              <h2>Sobre la celebración</h2>
+              <p>
+               Después de la ceremonia de graduación se llevará a cabo una celebración especial
+                para compartir este momento tan importante con familiares y amigos.
+              </p>
+              <p>
+               La fiesta se realizará en el <strong>Salón de Locomotoras ubicado en el complejo
+               3 Centurias en Aguascalientes</strong>. Durante la velada habrá música,
+               convivencia y un ambiente especial para celebrar el cierre de esta etapa.
+              </p>
+              <p>
+               En la fiesta la comida y bebidas serán por parte del evento. Sin embargo, si el
+               graduado, invitado o mesa completa (mesa individual del graduado), desea
+               bebidas alcohólicas, es necesario que la lleven por su cuenta ya que ese tipo de
+               bebidas no corren por cuenta del evento.
+              </p>
+              <p>
+               Para asistir a la celebración es necesario contar con el <strong>BOLETO PERSONAL</strong> correspondiente.
+               Agradecemos confirmar tu asistencia con anticipación para poder organizar
+               adecuadamente el evento.
+              </p>
+              </div>
+              </div>
+              <button class="btn-modal" id="openMassModal">Pica aquí para iformación de la misa</button>
+              <div class="modal" id="misaModal">
+                <div class="modal-content">
+                  <span class="close" id="closeMisaModal">&times;</span>
+                  <h2>Sobre la misa</h2>
+                  <p>La misa será realizada el mismo día 18 de diciembre de 2026, en Catedral Aguascalientes en el horario de 6:00 p.m.</p>
+                  <p>La misa es para todo graduado que quiera asistir, sin embargo no se garantiza un lugar para algún invitado o invitada por parte del graduado.
+                    favor de tomar en consideración esa información por si gusta de acompañar al graduado en su misa.
+                  </p>
+                </div>
+              </div>
+
+              <div class="details-grid">
+                <div class="price-box">
+                  <h3>Boleto personal</h3>
+                  <p>$1250 MXN</p>
+                </div>
+
+                <div class="info-box">
+                  <h3>Ubicación</h3>
+                  <p>Consulta la sede exacta del evento.</p>
+                  <a href="https://maps.app.goo.gl/7MpnpYsnSwtQJUzU6" target="_blank" rel="noopener noreferrer">
+                    Ver ubicación
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-box">
+              <h3>Confirmación de asistencia</h3>
+              <p>Llena el formulario para confirmar tu asistencia.</p>
+
+              <div class="form-alert">
+                fecha límite para responder: <strong>Lunes 30 de noviembre de 2026</strong>.
+              </div>
+
+              <form id="rsvpForm">
+                <div class="form-group">
+                  <label for="name">Nombre completo</label>
+                  <input type="text" id="name" name="name" required>
+                </div>
+
+                <div class="form-group">
+                 <label for="phone">Teléfono</label>
+                 <input type="tel" id="phone" name="phone" placeholder="Ej. 4491234567" required>
+                </div>
+
+              
+
+                <div class="form-group">
+                 <label for="guestType">Tipo de invitado</label>
+                 <select id="guestType" name="guestType" required>
+                 <option value="">Selecciona una opción</option>
+                 <option value="Familiar">Familiar</option>
+                 <option value="Amigo">Amigo</option>
+                 </select>
+                 </div>
+
+                <div class="form-group">
+                  <label for="attendance">¿Asistirás?</label>
+                  <select id="attendance" name="attendance" required>
+                    <option value="">Selecciona una opción</option>
+                    <option value="Sí">Sí</option>
+                    <option value="No">No</option>
+                    <option value="Por confirmar">Por confirmar</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="guests">Número de acompañantes</label>
+                  <input type="number" id="guests" name="guests" min="0" max="10">
+                </div>
+
+                <div class="form-group">
+                  <label for="message">Mensaje opcional</label>
+                  <textarea id="message" name="message"></textarea>
+                </div>
+
+                <button type="submit">Enviar confirmación</button>
+              </form>
+
+              <div id="status"></div>
+            </div>
+
+          </div>
+
+          <div class="actions">
+            <button type="button" id="prevBtn">Anterior</button>
+          </div>
+
+          <div class="nav-dots">
+            <button type="button" class="dot" data-go="0" aria-label="Ir a página 1"></button>
+            <button type="button" class="dot active" data-go="1" aria-label="Ir a página 2"></button>
+          </div>
+
+        </div>
+      </section>
+
+    </section>
+  </main>
+
+  <script  src="script.js"></script>
+</body>
+</html>
