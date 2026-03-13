@@ -21,9 +21,7 @@ app.get('/', (req, res) => {
 });
 
 // URI de MongoDB
-const uri =
-  "mongodb+srv://webcraftv_db_user:merenganov09@cluster0.f0l5nwb.mongodb.net/?appName=Cluster0";
-
+const uri = "mongodb+srv://webcraftv_db_user:<db_password>@cluster0.f0l5nwb.mongodb.net/?appName=Cluster0";
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
