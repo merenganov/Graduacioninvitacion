@@ -129,7 +129,7 @@ dots.forEach((dot) => {
    CUENTA REGRESIVA
 ========================= */
 
-const eventDate = new Date("2026-12-18T22:00:00").getTime();
+const eventDate = new Date("2026-12-18T21:00:00").getTime();
 
 function updateCountdown() {
   const now = new Date().getTime();
