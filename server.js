@@ -21,7 +21,9 @@ app.get('/', (req, res) => {
 });
 
 // URI de MongoDB
-const uri = "mongodb+srv://webcraftv_db_user:<merenganov09>@cluster0.f0l5nwb.mongodb.net/?appName=Cluster0";
+const uri =
+  "mongodb+srv://webcraftv_db_user:invitados12@cluster0.f0l5nwb.mongodb.net/invitaciones?retryWrites=true&w=majority&appName=Cluster0";
+
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -67,7 +69,6 @@ app.post('/submit', async (req, res) => {
 
     const { name, phone, guestType, attendance, guests, message } = req.body;
 
-    // Validación básica
     if (!name || !phone || !guestType || !attendance) {
       return res.status(400).send("Faltan campos obligatorios.");
     }
