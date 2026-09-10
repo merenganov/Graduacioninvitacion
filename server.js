@@ -1,11 +1,21 @@
+require('dotenv').config();
+
 const express = require('express');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const {
+  MongoClient,
+  ServerApiVersion,
+  ObjectId
+} = require('mongodb');
+
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+const TICKET_PRICE = 1250;
 
 // ==============================
 // MIDDLEWARES
@@ -15,15 +25,26 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-// Servir archivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ==============================
-// RUTA PRINCIPAL
+// PÁGINA PRINCIPAL
 // ==============================
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(
+    path.join(__dirname, 'public', 'index.html')
+  );
+});
+
+// ==============================
+// PANEL ADMINISTRATIVO
+// ==============================
+
+app.get('/admin', (req, res) => {
+  res.sendFile(
+    path.join(__dirname, 'public', 'admin.html')
+  );
 });
 
 // ==============================
@@ -33,15 +54,15 @@ app.get('/', (req, res) => {
 const uri = process.env.MONGODB_URI;
 
 if (!uri) {
-  throw new Error('MONGODB_URI no está configurada');
+  throw new Error(
+    'MONGODB_URI no está configurada'
+  );
 }
 
 let clientPromise = null;
 
 async function getMongoClient() {
 
-  // Si ya existe una conexión o una conexión en proceso,
-  // reutilizarla.
   if (clientPromise) {
     return clientPromise;
   }
@@ -50,8 +71,8 @@ async function getMongoClient() {
     serverApi: {
       version: ServerApiVersion.v1,
       strict: true,
-      deprecationErrors: true,
-    },
+      deprecationErrors: true
+    }
   });
 
   clientPromise = client.connect()
@@ -61,13 +82,14 @@ async function getMongoClient() {
         .db('admin')
         .command({ ping: 1 });
 
-      console.log('Conectado exitosamente a MongoDB');
+      console.log(
+        'Conectado exitosamente a MongoDB'
+      );
 
       return connectedClient;
     })
-    .catch((error) => {
+    .catch(error => {
 
-      // Si falla, permitir volver a intentar
       clientPromise = null;
 
       console.error(
@@ -82,33 +104,70 @@ async function getMongoClient() {
 }
 
 // ==============================
-// HEALTH CHECK
+// CALCULAR DATOS DEL INVITADO
 // ==============================
 
-app.get('/health', async (req, res) => {
+function calculateRsvpData(rsvp) {
 
-  try {
+  const companions =
+    Math.max(
+      0,
+      parseInt(rsvp.guests || 0)
+    );
 
-    await getMongoClient();
+  // Solo se cobran boletos si confirmó asistencia
+  const tickets =
+    rsvp.attendance === 'Sí'
+      ? 1 + companions
+      : 0;
 
-    res.status(200).json({
-      status: 'ok',
-      mongo: 'connected'
-    });
+  const ticketPrice =
+    Number(
+      rsvp.ticketPrice ||
+      TICKET_PRICE
+    );
 
-  } catch (error) {
+  const total =
+    tickets * ticketPrice;
 
-    res.status(500).json({
-      status: 'error',
-      mongo: 'disconnected',
-      error: error.message
-    });
+  const payments =
+    Array.isArray(rsvp.payments)
+      ? rsvp.payments
+      : [];
 
-  }
-});
+  const paid = payments.reduce(
+    (sum, payment) =>
+      sum + Number(payment.amount || 0),
+    0
+  );
+
+  const pending =
+    Math.max(total - paid, 0);
+
+  return {
+    _id: rsvp._id.toString(),
+
+    name: rsvp.name,
+    phone: rsvp.phone,
+    guestType: rsvp.guestType,
+    attendance: rsvp.attendance,
+
+    guests: companions,
+    message: rsvp.message || '',
+
+    ticketPrice,
+    tickets,
+    total,
+    paid,
+    pending,
+
+    payments,
+    createdAt: rsvp.createdAt
+  };
+}
 
 // ==============================
-// GUARDAR FORMULARIO
+// FORMULARIO PÚBLICO
 // ==============================
 
 app.post('/submit', async (req, res) => {
@@ -120,9 +179,8 @@ app.post('/submit', async (req, res) => {
       req.body
     );
 
-    // IMPORTANTE:
-    // Esperamos a MongoDB antes de intentar guardar.
-    const client = await getMongoClient();
+    const client =
+      await getMongoClient();
 
     const {
       name,
@@ -142,46 +200,69 @@ app.post('/submit', async (req, res) => {
 
       return res
         .status(400)
-        .send('Faltan campos obligatorios.');
+        .send(
+          'Faltan campos obligatorios.'
+        );
     }
 
-    const db = client.db('invitaciones');
+    const db =
+      client.db('invitaciones');
 
-    const collection = db.collection('rsvps');
+    const collection =
+      db.collection('rsvps');
 
     const newRsvp = {
 
-      name: String(name).trim(),
+      name:
+        String(name).trim(),
 
-      phone: String(phone).trim(),
+      phone:
+        String(phone).trim(),
 
-      guestType: String(guestType).trim(),
+      guestType:
+        String(guestType).trim(),
 
-      attendance: String(attendance).trim(),
+      attendance:
+        String(attendance).trim(),
 
-      guests: String(guests || '0').trim(),
+      guests:
+        Math.max(
+          0,
+          parseInt(guests || 0) || 0
+        ),
 
-      message: String(message || '').trim(),
+      message:
+        String(message || '').trim(),
 
-      createdAt: new Date()
+      ticketPrice:
+        TICKET_PRICE,
+
+      payments: [],
+
+      createdAt:
+        new Date()
     };
 
     const result =
-      await collection.insertOne(newRsvp);
+      await collection.insertOne(
+        newRsvp
+      );
 
     console.log(
-      'Documento insertado correctamente con ID:',
+      'Documento insertado con ID:',
       result.insertedId
     );
 
     return res
       .status(200)
-      .send('¡Datos guardados correctamente!');
+      .send(
+        '¡Datos guardados correctamente!'
+      );
 
   } catch (error) {
 
     console.error(
-      'Error al guardar los datos:',
+      'Error al guardar:',
       error
     );
 
@@ -195,9 +276,494 @@ app.post('/submit', async (req, res) => {
 });
 
 // ==============================
-// INICIAR SERVIDOR
+// LOGIN ADMIN
+// ==============================
+
+app.post(
+  '/api/admin/login',
+  (req, res) => {
+
+    const {
+      username,
+      password
+    } = req.body;
+
+    if (
+      !process.env.ADMIN_USER ||
+      !process.env.ADMIN_PASSWORD ||
+      !process.env.JWT_SECRET
+    ) {
+
+      return res.status(500).json({
+        error:
+          'El administrador no está configurado.'
+      });
+    }
+
+    if (
+      username !==
+        process.env.ADMIN_USER ||
+      password !==
+        process.env.ADMIN_PASSWORD
+    ) {
+
+      return res.status(401).json({
+        error:
+          'Usuario o contraseña incorrectos.'
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        role: 'admin'
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '12h'
+      }
+    );
+
+    return res.json({
+      success: true,
+      token
+    });
+  }
+);
+
+// ==============================
+// PROTEGER RUTAS ADMIN
+// ==============================
+
+function requireAdmin(
+  req,
+  res,
+  next
+) {
+
+  const authorization =
+    req.headers.authorization;
+
+  if (
+    !authorization ||
+    !authorization.startsWith(
+      'Bearer '
+    )
+  ) {
+
+    return res
+      .status(401)
+      .json({
+        error: 'No autorizado'
+      });
+  }
+
+  const token =
+    authorization.substring(7);
+
+  try {
+
+    jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
+
+    next();
+
+  } catch (error) {
+
+    return res
+      .status(401)
+      .json({
+        error:
+          'Sesión inválida o expirada'
+      });
+  }
+}
+
+// ==============================
+// OBTENER INVITADOS
+// ==============================
+
+app.get(
+  '/api/admin/rsvps',
+  requireAdmin,
+  async (req, res) => {
+
+    try {
+
+      const client =
+        await getMongoClient();
+
+      const db =
+        client.db('invitaciones');
+
+      const collection =
+        db.collection('rsvps');
+
+      const rsvps =
+        await collection
+          .find({})
+          .sort({
+            createdAt: -1
+          })
+          .toArray();
+
+      const data =
+        rsvps.map(
+          calculateRsvpData
+        );
+
+      return res.json(data);
+
+    } catch (error) {
+
+      console.error(
+        'Error obteniendo registros:',
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+          error:
+            'No se pudieron obtener los registros.'
+        });
+    }
+  }
+);
+
+// ==============================
+// EDITAR INVITADO
+// ==============================
+
+app.put(
+  '/api/admin/rsvps/:id',
+  requireAdmin,
+  async (req, res) => {
+
+    try {
+
+      const id =
+        req.params.id;
+
+      if (!ObjectId.isValid(id)) {
+
+        return res
+          .status(400)
+          .json({
+            error:
+              'ID inválido'
+          });
+      }
+
+      const {
+        name,
+        phone,
+        guestType,
+        attendance,
+        guests,
+        message
+      } = req.body;
+
+      if (
+        !name ||
+        !phone ||
+        !guestType ||
+        !attendance
+      ) {
+
+        return res
+          .status(400)
+          .json({
+            error:
+              'Faltan campos obligatorios.'
+          });
+      }
+
+      const client =
+        await getMongoClient();
+
+      const db =
+        client.db('invitaciones');
+
+      const collection =
+        db.collection('rsvps');
+
+      await collection.updateOne(
+        {
+          _id:
+            new ObjectId(id)
+        },
+        {
+          $set: {
+
+            name:
+              String(name).trim(),
+
+            phone:
+              String(phone).trim(),
+
+            guestType:
+              String(guestType).trim(),
+
+            attendance:
+              String(attendance).trim(),
+
+            guests:
+              Math.max(
+                0,
+                parseInt(
+                  guests || 0
+                ) || 0
+              ),
+
+            message:
+              String(
+                message || ''
+              ).trim()
+          }
+        }
+      );
+
+      return res.json({
+        success: true
+      });
+
+    } catch (error) {
+
+      console.error(
+        'Error editando registro:',
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+          error:
+            'No se pudo editar.'
+        });
+    }
+  }
+);
+
+// ==============================
+// REGISTRAR ABONO
+// ==============================
+
+app.post(
+  '/api/admin/rsvps/:id/payments',
+  requireAdmin,
+  async (req, res) => {
+
+    try {
+
+      const id =
+        req.params.id;
+
+      if (!ObjectId.isValid(id)) {
+
+        return res
+          .status(400)
+          .json({
+            error:
+              'ID inválido'
+          });
+      }
+
+      const amount =
+        Number(req.body.amount);
+
+      if (
+        !amount ||
+        amount <= 0
+      ) {
+
+        return res
+          .status(400)
+          .json({
+            error:
+              'El monto debe ser mayor a cero.'
+          });
+      }
+
+      const client =
+        await getMongoClient();
+
+      const db =
+        client.db('invitaciones');
+
+      const collection =
+        db.collection('rsvps');
+
+      const rsvp =
+        await collection.findOne({
+          _id:
+            new ObjectId(id)
+        });
+
+      if (!rsvp) {
+
+        return res
+          .status(404)
+          .json({
+            error:
+              'Invitado no encontrado.'
+          });
+      }
+
+      const calculated =
+        calculateRsvpData(rsvp);
+
+      if (
+        amount >
+        calculated.pending
+      ) {
+
+        return res
+          .status(400)
+          .json({
+            error:
+              `El saldo pendiente es de $${calculated.pending}.`
+          });
+      }
+
+      const payment = {
+
+        amount:
+          Math.round(
+            amount * 100
+          ) / 100,
+
+        date:
+          new Date()
+      };
+
+      await collection.updateOne(
+        {
+          _id:
+            new ObjectId(id)
+        },
+        {
+          $push: {
+            payments:
+              payment
+          }
+        }
+      );
+
+      return res.json({
+        success: true
+      });
+
+    } catch (error) {
+
+      console.error(
+        'Error registrando pago:',
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+          error:
+            'No se pudo registrar el pago.'
+        });
+    }
+  }
+);
+
+// ==============================
+// ELIMINAR INVITADO
+// ==============================
+
+app.delete(
+  '/api/admin/rsvps/:id',
+  requireAdmin,
+  async (req, res) => {
+
+    try {
+
+      const id =
+        req.params.id;
+
+      if (!ObjectId.isValid(id)) {
+
+        return res
+          .status(400)
+          .json({
+            error:
+              'ID inválido'
+          });
+      }
+
+      const client =
+        await getMongoClient();
+
+      const db =
+        client.db('invitaciones');
+
+      const collection =
+        db.collection('rsvps');
+
+      await collection.deleteOne({
+        _id:
+          new ObjectId(id)
+      });
+
+      return res.json({
+        success: true
+      });
+
+    } catch (error) {
+
+      console.error(
+        'Error eliminando registro:',
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+          error:
+            'No se pudo eliminar.'
+        });
+    }
+  }
+);
+
+// ==============================
+// HEALTH
+// ==============================
+
+app.get('/health', async (req, res) => {
+
+  try {
+
+    await getMongoClient();
+
+    res.json({
+      status: 'ok',
+      mongo: 'connected'
+    });
+
+  } catch (error) {
+
+    console.error('ERROR MONGODB:', error);
+
+    res.status(500).json({
+      status: 'error',
+      mongo: 'disconnected',
+      error: error.message
+    });
+  }
+});
+
+// ==============================
+// SERVIDOR
 // ==============================
 
 app.listen(port, () => {
-  console.log(`Servidor corriendo en puerto ${port}`);
+  console.log(
+    `Servidor corriendo en puerto ${port}`
+  );
 });

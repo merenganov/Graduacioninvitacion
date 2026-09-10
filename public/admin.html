@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>
+    Panel Administrativo
+  </title>
+
+  <link
+    rel="stylesheet"
+    href="admin.css"
+  >
+</head>
+
+<body>
+
+  <!-- LOGIN -->
+
+  <section
+    id="loginView"
+    class="login-container"
+  >
+
+    <div class="login-card">
+
+      <h1>
+        Panel administrativo
+      </h1>
+
+      <p>
+        Invitación de graduación
+      </p>
+
+      <form id="loginForm">
+
+        <label>
+          Usuario
+        </label>
+
+        <input
+          id="username"
+          type="text"
+          required
+        >
+
+        <label>
+          Contraseña
+        </label>
+
+        <input
+          id="password"
+          type="password"
+          required
+        >
+
+        <button type="submit">
+          Iniciar sesión
+        </button>
+
+      </form>
+
+      <p
+        id="loginStatus"
+        class="status"
+      ></p>
+
+    </div>
+
+  </section>
+
+
+  <!-- PANEL -->
+
+  <section
+    id="adminView"
+    class="admin-container hidden"
+  >
+
+    <header class="admin-header">
+
+      <div>
+        <h1>
+          Invitados
+        </h1>
+
+        <p>
+          Administración de confirmaciones
+          y pagos
+        </p>
+      </div>
+
+      <button
+        id="logoutBtn"
+        class="secondary"
+      >
+        Cerrar sesión
+      </button>
+
+    </header>
+
+    <div class="table-container">
+
+      <table>
+
+        <thead>
+
+          <tr>
+            <th>Invitado</th>
+            <th>Teléfono</th>
+            <th>Asistencia</th>
+            <th>Acompañantes</th>
+            <th>Boletos</th>
+            <th>Total</th>
+            <th>Abonado</th>
+            <th>Pendiente</th>
+            <th>Acciones</th>
+          </tr>
+
+        </thead>
+
+        <tbody id="rsvpTableBody">
+        </tbody>
+
+      </table>
+
+    </div>
+
+    <p
+      id="adminStatus"
+      class="status"
+    ></p>
+
+  </section>
+
+  <script src="admin.js"></script>
+
+</body>
+</html>
